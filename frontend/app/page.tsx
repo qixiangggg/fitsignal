@@ -5,7 +5,7 @@ export default function Home() {
     <header className="flex flex-col gap-2">
         <div className="flex gap-2 items-center">
             <img src="logo.png" alt="logo" className="bg-green-500 p-2 rounded-md"/>
-            <h1>FitSignal</h1>
+            <h1 className="text-2xl">FitSignal</h1>
         </div>
         <p className="text-zinc-400 text-xs">Upload your resume and provide company details to get an AI-powered analysis that optimizes your resume for the specific role and company.</p>
     </header>
@@ -42,7 +42,13 @@ export default function Home() {
         </div>
         <div>
             <section className="h-1/2">
-                <h2>Analysis Results</h2>
+                <div className="flex justify-between items-center">
+                    <h2>Analysis Results</h2>
+                    <div className="flex gap-2">
+                        <button className="bg-zinc-900 px-4 py-2 rounded-md cursor-pointer">Export PDF</button>
+                        <button className="bg-green-700 px-4 py-2 rounded-md cursor-pointer">Copy Text</button>
+                    </div>
+                </div>
                 <hr className="text-zinc-800 mt-10 mb-6"/>
                 <div className="bg-zinc-900 h-98 flex items-center justify-center">
                     <span className="text-zinc-400 text-center">Upload your resume and provide company details to see AI analysis results here</span>
