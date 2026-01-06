@@ -21,7 +21,7 @@ export default function Home() {
                 <p className="text-zinc-400 text-xs">Upload your resume and provide company details to get an AI-powered analysis that optimizes your resume for the specific role and company.</p>
             </header>
             <hr className="text-zinc-800"/>
-            <main className="flex flex-col gap-18 md:flex-row h-full">
+            <main>
                 <div className="">
                     <section className="h-1/2 md:h-full">
                         <Form action={analyzeResume} className="flex flex-col gap-4">
