@@ -4,10 +4,17 @@ import PdfViewer from "@/app/components/PdfViewerClient"
 import { useState } from "react";
 import  analyzeResume  from "@/app/analyzeResume";
 export default function Home() {
-    const [resumeFile, setResumeFile] = useState(null);
-    
+    const [resumeFile, setResumeFile] = useState("");
+    const [newResumeFile, setNewResumeFile] = useState("");
     function uploadFile(e:any){
         setResumeFile(e.target.files[0]);
+    }
+ 
+    async function rewriteResume(data: FormData){
+        const buffer = await analyzeResume(data)
+        const pdfBlob = new Blob([buffer], {type:"application/pdf"});
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        setNewResumeFile(pdfUrl);
     }
 
     return (
@@ -24,7 +31,7 @@ export default function Home() {
             <main>
                 <div className="">
                     <section className="h-1/2 md:h-full">
-                        <Form action={analyzeResume} className="flex flex-col gap-4">
+                        <Form action={rewriteResume} className="flex flex-col gap-4">
                             <section className="flex flex-col text-white">
                                 <label htmlFor="upload-resume">Upload Resume
                                     <div className="bg-zinc-900 rounded-md flex flex-col items-center p-4 gap-2 cursor-pointer">
@@ -50,7 +57,7 @@ export default function Home() {
                                 </label>
                                 <input type="file" id="upload-resume" className="hidden" onChange={uploadFile} accept=".pdf" name="file" required/>
                             </section>
-                            {/* {resumeFile && <PdfViewer url={URL.createObjectURL(resumeFile)}/>} */}
+                            {newResumeFile && <PdfViewer url={URL.createObjectURL(resumeFile)}/>}
                             <section className="flex flex-col text-white">
                                 <label htmlFor="company-url">Company URL*</label>
                                 <input type="text" id="company-url" className="bg-zinc-900  rounded-md p-2" placeholder="https://company.com" name="company_blog_url" required/>
@@ -76,9 +83,10 @@ export default function Home() {
                     </div>
                 </div>
                 <hr className="text-zinc-800 mt-6 mb-6"/>
+                {newResumeFile ? <PdfViewer url={newResumeFile}/> :
                 <div className="bg-zinc-900 h-98 flex items-center justify-center">
                     <span className="text-zinc-400 text-center">Upload your resume and provide company details to see AI analysis results here</span>
-                </div>
+                </div>}
             </section>
         </div>
     </div>

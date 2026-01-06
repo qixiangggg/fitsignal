@@ -6,6 +6,6 @@ export default async function analyzeResume(data: FormData) {
         method: "POST",
         body: data,       
     });
-    console.log(response);
-    return;
+    const responseData = await response.arrayBuffer();
+    return responseData;
 }
