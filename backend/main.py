@@ -42,22 +42,31 @@ async def analyze(file: UploadFile = File(...), company_blog_url: str = Form(...
 
     for page in pdfReader.pages:
         resume += page.extract_text()
-    system_prompt = "Act as a senior tech recruiter for a company. I will give you the job description you post and the blogs your company post that delimited by triple hashtag, Your goal is to rewrite the resume delimited by triple backtick to match the company desire candidates. Please give the resume in markdown format so i can convert to html then convert to pdf."
+    system_prompt = """
+    Act as a senior tech recruiter for a company. 
+    I will give you the job description you post and the blogs your company post that delimited by triple hashtag, 
+    Your goal is to rewrite the resume delimited by triple backtick to match the job and company.
+    Output ONLY valid Markdown. 
+    Do not include explanations or commentary.
+    """
     resume = f"```{resume}```"
     company_info = f"###{company_blog.markdown + job_description.markdown}###"
 
-    response = client.chat.completions.create(
+    response = client.responses.create(
         model="gpt-5-nano",
-        messages=[{
+        input=[
+            {
             "role": "system",
             "content": system_prompt,
-        }, {
+            },
+            {
             "role": "user",
             "content": resume + company_info,
-        }],
+            }
+        ],
     )
 
-    ai_response = response.choices[0].message.content
+    ai_response = response.output_text
     html = markdown.markdown(ai_response)
     await run_in_threadpool(html_to_pdf,html,"result.pdf")
     return FileResponse("result.pdf", media_type="application/pdf", filename="analysis.pdf")
