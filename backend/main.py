@@ -5,6 +5,10 @@ from firecrawl import Firecrawl
 from dotenv import load_dotenv
 from openai import OpenAI
 import os
+import markdown
+from playwright.sync_api import sync_playwright
+from fastapi.responses import FileResponse
+from fastapi.concurrency import run_in_threadpool
 
 app = FastAPI()
 
@@ -17,7 +21,7 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_header=["*"]
+    allow_headers=["*"]
 )
 load_dotenv()
 FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY")
@@ -38,7 +42,7 @@ async def analyze(file: UploadFile = File(...), company_blog_url: str = Form(...
 
     for page in pdfReader.pages:
         resume += page.extract_text()
-    system_prompt = "Act as a senior tech recruiter for a company. I will give you the job description you post and the blogs your company post that delimited by triple hashtag, Your goal is to rewrite the resume delimited by triple backtick to match the company desire candidates."
+    system_prompt = "Act as a senior tech recruiter for a company. I will give you the job description you post and the blogs your company post that delimited by triple hashtag, Your goal is to rewrite the resume delimited by triple backtick to match the company desire candidates. Please give the resume in markdown format so i can convert to html then convert to pdf."
     resume = f"```{resume}```"
     company_info = f"###{company_blog.markdown + job_description.markdown}###"
 
@@ -52,4 +56,16 @@ async def analyze(file: UploadFile = File(...), company_blog_url: str = Form(...
             "content": resume + company_info,
         }],
     )
-    return {"file": response.choices[0].message.content}
+
+    ai_response = response.choices[0].message.content
+    html = markdown.markdown(ai_response)
+    await run_in_threadpool(html_to_pdf,html,"result.pdf")
+    return FileResponse("result.pdf", media_type="application/pdf", filename="analysis.pdf")
+
+def html_to_pdf(html_content, output_path):
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.set_content(html_content)
+        page.pdf(path=output_path)
+        browser.close()
